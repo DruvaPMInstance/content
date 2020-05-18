@@ -93,9 +93,14 @@ class BaseGoogleClient:
         :param insecure: Insecure flag
         :param kwargs: Potential arguments dict
         """
-        credentials = service_account.ServiceAccountCredentials.from_json_keyfile_dict(
-            client_secret, scopes=scopes
-        )
+        if client_secret:
+            credentials = service_account.ServiceAccountCredentials.from_json_keyfile_dict(
+                client_secret, scopes=scopes
+            )
+        else:
+            from google.auth import compute_engine
+            credentials = compute_engine.Credentials()
+
         if proxy or insecure:
             http_client = credentials.authorize(
                 self.get_http_client_with_proxy(proxy, insecure)
@@ -543,7 +548,8 @@ def init_google_client(
     :return:
     """
     try:
-        service_account_json = json.loads(service_account_json)
+        if service_account_json:
+            service_account_json = json.loads(service_account_json)
         client = PubSubClient(
             default_project=default_project,
             default_subscription=default_subscription,
